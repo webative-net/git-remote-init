@@ -1,0 +1,19 @@
+#!/bin/bash
+gitTop=$( git rev-parse --show-toplevel 2> /dev/null )
+[[ "$gitTop" == "" ]] && exit 0
+gitRemotes=$gitTop/.gitremotes
+[[ ! -e $gitRemotes ]] && exit 0
+# if exists added remote repos then exit
+[[ "$( git remote -v )" == "" ]] && exit 0
+remotes=$(sed '/origin/d' $gitRemotes | awk 'NR%2==0 {print $1";"$2 }')
+for r in $remotes ; do
+	name=$(echo $r | awk -F\; '{print $1}')
+	(( `git remote -v | grep -c $name` > 0 )) && continue
+	git remote add -f $(echo $r | sed 's/;/ /') 2> /dev/null
+	git remote set-head $name -a
+	if (( `git branch | grep -c $name` == 0 )); then
+		git branch -t $name $name
+	else
+		git branch -u $name/HEAD $name
+	fi
+done
