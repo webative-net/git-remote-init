@@ -14,6 +14,6 @@ for r in $remotes ; do
 	if (( `git branch | grep -c $name` == 0 )); then
 		git branch -t $name $name
 	else
-		git branch -u $name/HEAD $name
+		git branch -u $name $name
 	fi
 done
